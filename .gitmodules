@@ -1,0 +1,4 @@
+[submodule "scala-android-plugin"]
+	path = scala-android-plugin
+	url = https://github.com/androidscala213/scala-android-plugin.git
+	branch = Java8

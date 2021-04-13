@@ -1,0 +1,82 @@
+// Top-level build file where you can add configuration options common to all sub-projects/modules.
+buildscript {
+    repositories {
+        google()
+        jcenter()
+    }
+    dependencies {
+        classpath "com.android.tools.build:gradle:4.1.2"
+        classpath 'scala.android.plugin:scala-android-plugin'
+
+        // NOTE: Do not place your application dependencies here; they belong
+        // in the individual module build.gradle files
+    }
+}
+
+allprojects {
+    repositories {
+        mavenLocal()
+        google()
+        jcenter()
+    }
+}
+
+apply plugin: 'com.android.application'
+apply plugin: scala.android.plugin.ScalaAndroidPlugin
+
+println "Running gradle on JRE version: ${JavaVersion.current()} (recommends 1.8)"
+println "Running gradle version: $gradle.gradleVersion (recommends 6.6)"
+
+ext {
+
+    // Possible choices of scala versions are
+
+    // 2.11.x
+    // 2.12.7 or lower
+    // 2.13.5   *this requires local maven publish of scala-library-hack
+
+    scalaVersion = "2.13.5"
+    scalaMajorVersion = scalaVersion.substring(0, 4)
+}
+
+tasks.withType(ScalaCompile) {
+    dependsOn ':scala-library-hack:publishToMavenLocal'
+    scalaCompileOptions.with {
+        additionalParameters = [
+                "-feature",
+        ]
+
+        if (scalaMajorVersion == '2.13')
+            additionalParameters += [
+                    "-Ybackend-parallelism", "8",
+                    "-Ycache-plugin-class-loader:last-modified",
+                    "-Ycache-macro-class-loader:last-modified",
+            ]
+    }
+}
+
+android {
+    compileSdkVersion 29
+    buildToolsVersion "29.0.3"
+
+    defaultConfig {
+        applicationId "com.example.androidscala213"
+        minSdkVersion(scalaMajorVersion == '2.11' ? 21 : 26)
+        targetSdkVersion 29
+        versionCode 1
+        versionName "1.0"
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+}
+
+dependencies {
+    compileOnly fileTree(dir: "$buildDir", include: ["**/R.jar"])
+    implementation "org.scala-lang:scala-library:$scalaVersion"
+    implementation 'androidx.appcompat:appcompat:1.2.0'
+    implementation 'com.google.android.material:material:1.3.0'
+    implementation 'androidx.constraintlayout:constraintlayout:2.0.4'
+}

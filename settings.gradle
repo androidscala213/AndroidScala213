@@ -1,0 +1,3 @@
+includeBuild 'scala-android-plugin'
+include ':scala-library-hack'
+rootProject.name = "AndroidScala213"

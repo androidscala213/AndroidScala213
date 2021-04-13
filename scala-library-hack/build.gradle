@@ -1,0 +1,73 @@
+buildscript {
+    repositories {
+        maven {
+            url "https://plugins.gradle.org/m2/"
+        }
+    }
+    dependencies {
+        classpath "com.github.jengelman.gradle.plugins:shadow:6.1.0"
+    }
+}
+
+plugins {
+    id 'java'
+    id 'scala'
+    id 'maven-publish'
+}
+
+apply plugin: "com.github.johnrengelman.shadow"
+
+tasks.withType(ScalaCompile) {
+    scalaCompileOptions.additionalParameters = ["-feature", "-language:implicitConversions"]
+}
+
+artifacts {
+    archives jar
+}
+
+repositories {
+    mavenLocal()
+    mavenCentral()
+}
+
+group 'com.scalapatch'
+version '2.13.5'
+
+repositories {
+    mavenCentral()
+}
+
+sourceSets {
+    main {
+        scala {
+            srcDirs = ['src/main/scala', 'src/main/java']
+        }
+        java {
+            srcDirs = []
+        }
+    }
+}
+
+dependencies {
+    implementation "org.scala-lang:scala-library:$version"
+}
+
+shadowJar {
+    archiveClassifier.set('')
+}
+
+publishing {
+    publications {
+        shadow(MavenPublication) { publication ->
+            project.shadow.component(publication)
+
+            groupId = "org.scala-lang"
+            artifactId = 'scala-library'
+
+            pom {
+                name = "Modified Scala library"
+                description = "Scala library modified to drop some Java 8 depencency"
+            }
+        }
+    }
+}
